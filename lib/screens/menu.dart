@@ -79,7 +79,9 @@ class menu extends StatelessWidget {
                 onTap:
                     () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const finanzas()),
+                      MaterialPageRoute(
+                        builder: (context) => const TusFinanzasApp(),
+                      ),
                     ),
               ),
               _menuCard(
@@ -89,7 +91,9 @@ class menu extends StatelessWidget {
                 onTap:
                     () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const reporte()),
+                      MaterialPageRoute(
+                        builder: (context) => const CrearReporte(),
+                      ),
                     ),
               ),
               _menuCard(
