@@ -36,7 +36,9 @@ class menu extends StatelessWidget {
                   onPressed: () {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => const login()),
+                      MaterialPageRoute(
+                        builder: (context) => const LoginScreen(),
+                      ),
                     );
                   },
                 ),
@@ -59,7 +61,7 @@ class menu extends StatelessWidget {
                 onTap:
                     () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const ingresos()),
+                      MaterialPageRoute(builder: (context) => IngresosScreen()),
                     ),
               ),
               _menuCard(
@@ -69,7 +71,7 @@ class menu extends StatelessWidget {
                 onTap:
                     () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const gastos()),
+                      MaterialPageRoute(builder: (context) => GastosScreen()),
                     ),
               ),
               _menuCard(
