@@ -1,29 +1,23 @@
+// lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
 import 'package:app_gastos/screens/login.dart';
+import 'package:app_gastos/screens/menu.dart'; 
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
     print('✅ Firebase initialized successfully');
-    
-    // Start rendering immediately
     runApp(const MyApp());
-    
-    // Perform async tests after initial render
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await _performFirebaseTests();
-    });
+
   } catch (e) {
     print('🔥 Fatal Firebase error: $e');
-    runApp(const ErrorApp());
+    runApp(ErrorApp(errorMessage: e.toString())); // Pass error message
   }
 }
 
@@ -34,63 +28,74 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: FutureBuilder<User?>(
-        future: FirebaseAuth.instance.authStateChanges().first,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
-          }
-          
-          return const LoginScreen();
-        },
-      ),
+      home: AuthWrapper(), // Use a wrapper widget to handle auth state
     );
   }
 }
 
-Future<void> _performFirebaseTests() async {
-  try {
-    // Test Anonymous Auth
-    final user = await FirebaseAuth.instance.signInAnonymously();
-    print('👤 Anonymous UID: ${user.user?.uid}');
+// In lib/main.dart, inside AuthWrapper build method:
+class AuthWrapper extends StatelessWidget {
+  const AuthWrapper({super.key});
 
-    // Test Firestore Write
-    final docRef = await FirebaseFirestore.instance.collection('test').add({
-      'test': DateTime.now().toIso8601String(),
-    });
-    print('📝 Document written: ${docRef.id}');
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        print("AuthWrapper rebuild: ConnectionState=${snapshot.connectionState}, HasData=${snapshot.hasData}, HasError=${snapshot.hasError}"); // <-- ADD THIS
 
-    // Test Firestore Read
-    final snapshot = await FirebaseFirestore.instance
-        .collection('test')
-        .limit(1)
-        .get();
-    print('📖 Documents found: ${snapshot.docs.length}');
-  } catch (e) {
-    print('⚠️ Firebase test error: $e');
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          print("AuthWrapper: Waiting for auth state...");
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (snapshot.hasError) { // <-- ADD ERROR HANDLING
+           print("AuthWrapper: Error in auth stream: ${snapshot.error}");
+           return const Scaffold(body: Center(child: Text('Error en la autenticación')));
+        }
+
+
+        if (snapshot.hasData) {
+          print('AuthWrapper: User is logged in: ${snapshot.data?.uid}. Showing menu.'); 
+          return const menu();
+        }
+
+        print('AuthWrapper: User is logged out. Showing LoginScreen.');
+        return const LoginScreen();
+      },
+    );
   }
 }
 
+
 class ErrorApp extends StatelessWidget {
-  const ErrorApp({super.key});
+  final String errorMessage;
+  const ErrorApp({super.key, required this.errorMessage});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
         body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text('Critical Error', style: TextStyle(fontSize: 24)),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () => main(),
-                child: const Text('Retry'),
-              ),
-            ],
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.red, size: 50),
+                const SizedBox(height: 20),
+                const Text('Firebase Initialization Error', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 10),
+                Text(errorMessage, textAlign: TextAlign.center), 
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () => main(), 
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
           ),
         ),
       ),
