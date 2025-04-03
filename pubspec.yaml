@@ -38,6 +38,13 @@ dependencies:
   google_fonts: ^6.2.1
   intl: ^0.20.2
 
+  # --- Firebase ---
+  firebase_core: ^3.3.0 # Necesario para inicializar Firebase
+  firebase_auth: ^5.1.2 # Para autenticación
+  cloud_firestore: ^5.1.0 # Para la base de datos NoSQL
+  # --- Fin Firebase ---
+
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
