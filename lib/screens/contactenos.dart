@@ -5,297 +5,179 @@ class Contactenos extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Contacto',
-      home: SupportScreen(),
-      debugShowCheckedModeBanner: false,
+    final Color colorPrimario = Colors.blue;
+    final Color colorFondo = Color(0xFFF5F5F5);
+    final Color colorTarjeta = Colors.white;
+    final Color colorTextoSecundario = Color(0xFFA0A0A0);
+
+    return Scaffold(
+      backgroundColor: colorFondo,
+      appBar: AppBar(
+        backgroundColor: colorPrimario,
+        foregroundColor: Colors.white,
+        title: const Text('Contacto de Soporte'),
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _tarjetaInformacion(colorPrimario, colorTarjeta),
+            const SizedBox(height: 20),
+            _tarjetaConsulta(colorPrimario, colorTarjeta, colorTextoSecundario),
+            const SizedBox(height: 20),
+            _tarjetaContacto(colorTarjeta),
+          ],
+        ),
+      ),
     );
   }
-}
 
-class SupportScreen extends StatefulWidget {
-  @override
-  _SoportScreenState createState() => _SoportScreenState();
-}
+  Widget _tarjetaInformacion(Color colorPrimario, Color colorTarjeta) {
+    return Card(
+      color: colorTarjeta,
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.help_outline, color: colorPrimario),
+                const SizedBox(width: 8),
+                const Text(
+                  'Preguntas Frecuentes',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _preguntaRespuesta(
+              '¿Cómo registro mis ingresos?',
+              'Ve a la sección de Ingresos y completa el formulario con los detalles de tu ingreso.',
+            ),
+            _preguntaRespuesta(
+              '¿Puedo editar un gasto después de registrarlo?',
+              'Sí, en la pantalla de Gastos puedes editar o eliminar gastos recientes.',
+            ),
+            _preguntaRespuesta(
+              '¿Cómo genero un reporte financiero?',
+              'Navega a la sección de Imprimir Reporte y selecciona el período deseado.',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-class _SoportScreenState extends State<SupportScreen> {
-  final Color primaryColor = Color.fromARGB(255, 76, 110, 244);
-  final Color mainBackgroundColor = Color.fromARGB(255, 245, 245, 245);
-  final Color cardColor = Color.fromARGB(255, 255, 255, 255);
-  final Color primaryTextColor = Color.fromARGB(255, 0, 0, 0);
-  final Color secondaryTextColor = Color.fromARGB(255, 160, 160, 160);
-  String? selectedIssue;
-  final TextEditingController consultaController = TextEditingController();
+  Widget _preguntaRespuesta(String pregunta, String respuesta) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          pregunta,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+        ),
+        Text(
+          respuesta,
+          style: const TextStyle(fontSize: 13, color: Color(0xFF5C5C5C)),
+        ),
+        const Divider(),
+      ],
+    );
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: mainBackgroundColor,
-      body: SingleChildScrollView(
+  Widget _tarjetaConsulta(
+    Color colorPrimario,
+    Color colorTarjeta,
+    Color colorTextoSecundario,
+  ) {
+    return Card(
+      color: colorTarjeta,
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Header
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.symmetric(vertical: 30),
-              color: primaryColor,
-              child: Center(
-                child: Text(
-                  'Contacto de Soporte',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
+            Row(
+              children: [
+                Icon(Icons.chat_bubble_outline, color: colorPrimario),
+                const SizedBox(width: 8),
+                const Text(
+                  'Enviar Consulta',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
-              ),
+              ],
             ),
-            SizedBox(height: 20),
-
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Card.filled(
-                elevation: 4,
-                color: cardColor,
+            const SizedBox(height: 20),
+            _campoTexto('Nombre Completo', colorTextoSecundario),
+            const SizedBox(height: 20),
+            _campoTexto('Correo Electrónico', colorTextoSecundario),
+            const SizedBox(height: 20),
+            _campoTexto(
+              'Describe tu consulta o problema',
+              colorTextoSecundario,
+              maxLines: 4,
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.send, color: Colors.white),
+              label: const Text('Enviar Consulta'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colorPrimario,
+                foregroundColor: Colors.white,
+                minimumSize: const Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(6),
-                ),
-
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.help_outlined, color: primaryColor),
-                          SizedBox(width: 8),
-                          Text(
-                            'Preguntas Frecuentes',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 16),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              //1
-                              '¿Cómo registro mis ingresos?',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                            Text(
-                              'Ve a la sección de Ingresos y completa el formulario con los detalles de tu ingreso.',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Color.fromARGB(255, 92, 92, 92),
-                              ),
-                            ),
-                            Divider(),
-
-                            Text(
-                              //2
-                              '¿Puedo editar un gasto después de registrarlo?',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                            Text(
-                              'Si, en la pantalla de Gastos puedes editar o eliminar gastos recientes',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Color.fromARGB(255, 92, 92, 92),
-                              ),
-                            ),
-                            Divider(),
-
-                            Text(
-                              //3
-                              '¿Cómo genero un reporte financiero?',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                            Text(
-                              'Navega a la sección de Imprimir Reporte y selecciona el período deseado',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Color.fromARGB(255, 92, 92, 92),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Divider(),
-                    ],
-                  ),
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
+              onPressed: () {},
             ),
+          ],
+        ),
+      ),
+    );
+  }
 
-            SizedBox(height: 20),
+  Widget _campoTexto(
+    String label,
+    Color colorTextoSecundario, {
+    int maxLines = 1,
+  }) {
+    return TextField(
+      maxLines: maxLines,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        labelStyle: TextStyle(color: colorTextoSecundario),
+      ),
+    );
+  }
 
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Card.filled(
-                color: cardColor,
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.chat_bubble_outline_outlined,
-                            color: primaryColor,
-                          ),
-                          SizedBox(width: 8),
-                          Text(
-                            'Enviar Consulta',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 20),
-                      TextField(
-                        decoration: InputDecoration(
-                          labelText: 'Nombre Completo',
-                          border: OutlineInputBorder(),
-                          labelStyle: TextStyle(color: secondaryTextColor),
-                        ),
-                      ),
-                      SizedBox(height: 20),
-                      TextField(
-                        decoration: InputDecoration(
-                          labelText: 'Correo Electrónico',
-                          border: OutlineInputBorder(),
-                          labelStyle: TextStyle(color: secondaryTextColor),
-                        ),
-                      ),
-                      SizedBox(height: 20),
-                      DropdownButtonFormField<String>(
-                        value: selectedIssue,
-                        dropdownColor: cardColor,
-                        borderRadius: BorderRadius.circular(12),
-                        items:
-                            [
-                              'Inicio de sesión',
-                              'Restablecimiento de contraseña',
-                              'Problemas de conección',
-                              'Problemas de sincronización de datos',
-                              'Otro',
-                            ].map((issue) {
-                              return DropdownMenuItem(
-                                value: issue,
-                                child: Text(issue),
-                              );
-                            }).toList(),
-                        decoration: InputDecoration(
-                          labelText: 'Seleccionar Asunto',
-                          labelStyle: TextStyle(color: primaryTextColor),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                        ),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedIssue = value;
-                          });
-                        },
-                      ),
-                      SizedBox(height: 20),
-                      TextField(
-                        maxLines: 4,
-                        textAlign: TextAlign.start,
-                        decoration: InputDecoration(
-                          labelText: ('Describe tu consulta o problema'),
-                          border: OutlineInputBorder(),
-                          labelStyle: TextStyle(color: secondaryTextColor),
-                          alignLabelWithHint: true,
-                          floatingLabelAlignment: FloatingLabelAlignment.start,
-                        ),
-                      ),
-                      SizedBox(height: 20),
-                      ElevatedButton.icon(
-                        icon: Icon(Icons.send_sharp, color: Colors.white),
-                        label: Text('Enviar Consulta'),
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          backgroundColor: primaryColor,
-                          minimumSize: Size(double.infinity, 50),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(6.0),
-                          ),
-                        ),
-                        onPressed: () {},
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+  Widget _tarjetaContacto(Color colorTarjeta) {
+    return Card(
+      color: colorTarjeta,
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: const [
+            Text(
+              'Información de Contacto',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
-            SizedBox(height: 24),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: SizedBox(
-                width: double.infinity,
-                child: Card.filled(
-                  color: cardColor,
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Información de Contacto',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        SizedBox(height: 16),
-                        Text(
-                          'Correo: ***************@mail.com',
-                          style: TextStyle(fontSize: 14),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'Teléfono: +***********',
-                          style: TextStyle(fontSize: 14),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'Horario: ************',
-                          style: TextStyle(fontSize: 14),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 40),
+            SizedBox(height: 16),
+            Text('Correo: soporte@mail.com', style: TextStyle(fontSize: 14)),
+            SizedBox(height: 8),
+            Text('Teléfono: +123456789', style: TextStyle(fontSize: 14)),
+            SizedBox(height: 8),
+            Text('Horario: 9 AM - 6 PM', style: TextStyle(fontSize: 14)),
           ],
         ),
       ),

@@ -8,7 +8,11 @@ class GastosScreen extends StatefulWidget {
 }
 
 class _GastosScreenState extends State<GastosScreen> {
-  final Color primaryColor = Color(0xFF2A5EE8);
+  final Color colorPrimario = Colors.blue;
+  final Color colorFondo = Color(0xFFF5F5F5);
+  final Color colorTarjeta = Colors.white;
+  final Color colorTextoSecundario = Color(0xFFA0A0A0);
+
   final TextEditingController montoController = TextEditingController();
   final TextEditingController fechaController = TextEditingController();
   final TextEditingController notaController = TextEditingController();
@@ -48,31 +52,21 @@ class _GastosScreenState extends State<GastosScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF5F5F5),
+      backgroundColor: colorFondo,
+      appBar: AppBar(
+        backgroundColor: colorPrimario,
+        foregroundColor: Colors.white,
+        title: const Text('Gastos'),
+        centerTitle: true,
+      ),
       body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.symmetric(vertical: 30),
-              color: primaryColor,
-              child: Center(
-                child: Text(
-                  'Gastos',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 20),
             _buildGastoForm(),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             _buildGastosRecientes(),
-            SizedBox(height: 20),
-            _buildDistribucionGastos(),
           ],
         ),
       ),
@@ -83,6 +77,7 @@ class _GastosScreenState extends State<GastosScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Card(
+        color: colorTarjeta,
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
         child: Padding(
@@ -90,9 +85,15 @@ class _GastosScreenState extends State<GastosScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Agregar Gasto',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              Row(
+                children: [
+                  Icon(Icons.add, color: colorPrimario),
+                  SizedBox(width: 8),
+                  Text(
+                    'Agregar Gasto',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                ],
               ),
               SizedBox(height: 10),
               Row(
@@ -185,9 +186,12 @@ class _GastosScreenState extends State<GastosScreen> {
               SizedBox(height: 10),
               ElevatedButton.icon(
                 icon: Icon(Icons.add, color: Colors.white),
-                label: Text('Agregar Gasto'),
+                label: Text(
+                  'Agregar Gasto',
+                  style: TextStyle(color: colorFondo),
+                ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
+                  backgroundColor: colorPrimario,
                   minimumSize: Size(double.infinity, 50),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(6),
@@ -237,6 +241,7 @@ class _GastosScreenState extends State<GastosScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Card(
+        color: colorTarjeta,
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
         child: Padding(
@@ -244,9 +249,15 @@ class _GastosScreenState extends State<GastosScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Gastos Recientes',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              Row(
+                children: [
+                  Icon(Icons.edit, color: colorPrimario), // Icono de editar
+                  SizedBox(width: 8), // Espaciado entre el icono y el texto
+                  Text(
+                    'Gastos Recientes',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                ],
               ),
               SizedBox(height: 10),
               Column(
@@ -266,7 +277,7 @@ class _GastosScreenState extends State<GastosScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: Icon(Icons.edit, color: Colors.blue),
+                              icon: Icon(Icons.edit, color: colorPrimario),
                               onPressed: () {
                                 // Implementación para editar gasto
                               },
@@ -278,129 +289,6 @@ class _GastosScreenState extends State<GastosScreen> {
                                   gastos.removeAt(index);
                                 });
                               },
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDistribucionGastos() {
-    // Calcular totales por categoría
-    Map<String, double> totalesPorCategoria = {};
-    for (var gasto in gastos) {
-      final categoria = gasto['categoria'] as String;
-      final monto =
-          gasto['monto'] is int
-              ? (gasto['monto'] as int).toDouble()
-              : gasto['monto'] as double;
-      totalesPorCategoria[categoria] =
-          (totalesPorCategoria[categoria] ?? 0) + monto;
-    }
-
-    // Calcular total general
-    double totalGeneral = totalesPorCategoria.values.fold(
-      0,
-      (sum, amount) => sum + amount,
-    );
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Distribución de Gastos',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              SizedBox(height: 20),
-              SizedBox(
-                height: 200,
-                child:
-                    totalGeneral > 0
-                        ? PieChart(
-                          PieChartData(
-                            sections:
-                                totalesPorCategoria.entries.map((entry) {
-                                  final categoria = entry.key;
-                                  final monto = entry.value;
-
-                                  Color color;
-                                  if (categoria == 'Alquiler') {
-                                    color = Colors.blue;
-                                  } else if (categoria == 'Comida') {
-                                    color = Colors.green;
-                                  } else {
-                                    // Generar colores para otras categorías
-                                    color =
-                                        Colors.primaries[categorias.indexOf(
-                                              categoria,
-                                            ) %
-                                            Colors.primaries.length];
-                                  }
-
-                                  return PieChartSectionData(
-                                    value: monto,
-                                    title:
-                                        '${(monto / totalGeneral * 100).toStringAsFixed(0)}%',
-                                    color: color,
-                                    radius: 100.0,
-                                    titleStyle: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 12.0,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  );
-                                }).toList(),
-                            sectionsSpace: 2.0,
-                            centerSpaceRadius: 0.0,
-                          ),
-                        )
-                        : Center(
-                          child: Text(
-                            "Sin datos suficientes para mostrar el gráfico",
-                          ),
-                        ),
-              ),
-              SizedBox(height: 10),
-              // Leyenda
-              Column(
-                children:
-                    totalesPorCategoria.entries.map((entry) {
-                      final categoria = entry.key;
-                      final monto = entry.value;
-
-                      Color color;
-                      if (categoria == 'Alquiler') {
-                        color = Colors.blue;
-                      } else if (categoria == 'Comida') {
-                        color = Colors.green;
-                      } else {
-                        color =
-                            Colors.primaries[categorias.indexOf(categoria) %
-                                Colors.primaries.length];
-                      }
-
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: Row(
-                          children: [
-                            Container(width: 16, height: 16, color: color),
-                            SizedBox(width: 8),
-                            Expanded(child: Text(categoria)),
-                            Text(
-                              '\$${monto.toStringAsFixed(0)} (${(monto / totalGeneral * 100).toStringAsFixed(0)}%)',
                             ),
                           ],
                         ),

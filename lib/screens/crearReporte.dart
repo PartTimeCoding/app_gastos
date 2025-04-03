@@ -8,13 +8,13 @@ class CrearReporte extends StatefulWidget {
 }
 
 class _CrearReporteState extends State<CrearReporte> {
-  String selectedPeriod = 'Mensual';
-  final emailController = TextEditingController(text: 'ejemplo@correo.com');
+  String periodoSeleccionado = 'Mensual';
+  final controladorCorreo = TextEditingController(text: 'ejemplo@correo.com');
 
-  final List<Map<String, String>> reportHistory = [
-    {'title': 'Reporte Mensual - Marzo 2024', 'date': '2024-03-31'},
-    {'title': 'Reporte Trimestral - Q1 2024', 'date': '2024-03-31'},
-    {'title': 'Reporte Anual - 2023', 'date': '2023-12-31'},
+  final List<Map<String, String>> historialReportes = [
+    {'titulo': 'Reporte Mensual - Marzo 2024', 'fecha': '2024-03-31'},
+    {'titulo': 'Reporte Trimestral - Q1 2024', 'fecha': '2024-03-31'},
+    {'titulo': 'Reporte Anual - 2023', 'fecha': '2023-12-31'},
   ];
 
   @override
@@ -31,18 +31,18 @@ class _CrearReporteState extends State<CrearReporte> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildGenerateReportCard(),
+            _tarjetaGenerarReporte(),
             const SizedBox(height: 20),
-            _buildEmailReportCard(),
+            _tarjetaEnviarCorreo(),
             const SizedBox(height: 20),
-            _buildReportHistoryCard(),
+            _tarjetaHistorialReportes(),
           ],
         ),
       ),
     );
   }
 
-  Card _buildGenerateReportCard() {
+  Card _tarjetaGenerarReporte() {
     return Card(
       elevation: 4,
       color: Colors.white,
@@ -59,10 +59,10 @@ class _CrearReporteState extends State<CrearReporte> {
             const Text('Seleccionar Periodo'),
             DropdownButton<String>(
               isExpanded: true,
-              value: selectedPeriod,
-              onChanged: (String? newValue) {
+              value: periodoSeleccionado,
+              onChanged: (String? nuevoValor) {
                 setState(() {
-                  selectedPeriod = newValue!;
+                  periodoSeleccionado = nuevoValor!;
                 });
               },
               items:
@@ -70,10 +70,10 @@ class _CrearReporteState extends State<CrearReporte> {
                     'Mensual',
                     'Trimestral',
                     'Anual',
-                  ].map<DropdownMenuItem<String>>((String value) {
+                  ].map<DropdownMenuItem<String>>((String valor) {
                     return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
+                      value: valor,
+                      child: Text(valor),
                     );
                   }).toList(),
             ),
@@ -81,7 +81,7 @@ class _CrearReporteState extends State<CrearReporte> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _generatePdfReport,
+                onPressed: _generarReportePDF,
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(7.0),
@@ -98,7 +98,7 @@ class _CrearReporteState extends State<CrearReporte> {
     );
   }
 
-  Card _buildEmailReportCard() {
+  Card _tarjetaEnviarCorreo() {
     return Card(
       elevation: 4,
       color: Colors.white,
@@ -114,7 +114,7 @@ class _CrearReporteState extends State<CrearReporte> {
             const SizedBox(height: 16),
             const Text('Correo Electrónico'),
             TextField(
-              controller: emailController,
+              controller: controladorCorreo,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 contentPadding: EdgeInsets.symmetric(
@@ -127,7 +127,7 @@ class _CrearReporteState extends State<CrearReporte> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => _sendEmailReport(),
+                onPressed: _enviarReporteCorreo,
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(7.0),
@@ -144,7 +144,7 @@ class _CrearReporteState extends State<CrearReporte> {
     );
   }
 
-  Card _buildReportHistoryCard() {
+  Card _tarjetaHistorialReportes() {
     return Card(
       elevation: 4,
       color: Colors.white,
@@ -158,19 +158,20 @@ class _CrearReporteState extends State<CrearReporte> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            ...reportHistory
+            ...historialReportes
                 .map(
-                  (report) => Padding(
+                  (reporte) => Padding(
                     padding: const EdgeInsets.only(bottom: 8.0),
                     child: Row(
                       children: [
                         const Icon(Icons.insert_drive_file, size: 20),
                         const SizedBox(width: 8),
-                        Expanded(child: Text(report['title']!)),
+                        Expanded(child: Text(reporte['titulo']!)),
                         IconButton(
                           icon: const Icon(Icons.download),
                           color: Colors.blue,
-                          onPressed: () => _downloadReport(report['title']!),
+                          onPressed:
+                              () => _descargarReporte(reporte['titulo']!),
                           tooltip: 'Descargar reporte',
                         ),
                       ],
@@ -184,27 +185,29 @@ class _CrearReporteState extends State<CrearReporte> {
     );
   }
 
-  void _generatePdfReport() {
+  void _generarReportePDF() {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Generando reporte $selectedPeriod...')),
+      SnackBar(content: Text('Generando reporte $periodoSeleccionado...')),
     );
   }
 
-  void _sendEmailReport() {
+  void _enviarReporteCorreo() {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Enviando reporte a ${emailController.text}...')),
+      SnackBar(
+        content: Text('Enviando reporte a ${controladorCorreo.text}...'),
+      ),
     );
   }
 
-  void _downloadReport(String reportName) {
+  void _descargarReporte(String nombreReporte) {
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(SnackBar(content: Text('Descargando $reportName...')));
+    ).showSnackBar(SnackBar(content: Text('Descargando $nombreReporte...')));
   }
 
   @override
   void dispose() {
-    emailController.dispose();
+    controladorCorreo.dispose();
     super.dispose();
   }
 }

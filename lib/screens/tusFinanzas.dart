@@ -44,7 +44,6 @@ class TusFinanzasScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Tarjeta 1: Resumen Mensual
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -99,7 +98,6 @@ class TusFinanzasScreen extends StatelessWidget {
               ),
             ),
 
-            // Tarjeta 2: Comparación Ingresos vs Gastos - VERSIÓN DEFINITIVA
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -118,27 +116,30 @@ class TusFinanzasScreen extends StatelessWidget {
                       height: 200,
                       child: LayoutBuilder(
                         builder: (context, constraints) {
-                          final maxBarHeight = constraints.maxHeight * 0.7;
-                          final maxDataValue =
-                              7000.0; // Valor máximo esperado (ajustar según tus datos)
+                          final maxBarHeight = constraints.maxHeight * 0.5;
+                          final maxDataValue = 7000.0;
 
                           return Row(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              _buildBarChartColumn(
-                                'Feb',
-                                6000,
-                                4500,
-                                maxBarHeight,
-                                maxDataValue,
+                              Expanded(
+                                child: _buildBarChartColumn(
+                                  'Feb',
+                                  6000,
+                                  3000,
+                                  maxBarHeight,
+                                  maxDataValue,
+                                ),
                               ),
-                              _buildBarChartColumn(
-                                'Mar',
-                                6000,
-                                3000,
-                                maxBarHeight,
-                                maxDataValue,
+                              Expanded(
+                                child: _buildBarChartColumn(
+                                  'Mar',
+                                  5000,
+                                  4500,
+                                  maxBarHeight,
+                                  maxDataValue,
+                                ),
                               ),
                             ],
                           );
@@ -150,7 +151,6 @@ class TusFinanzasScreen extends StatelessWidget {
               ),
             ),
 
-            // Tarjeta 3: Recomendaciones
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),

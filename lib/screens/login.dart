@@ -1,17 +1,19 @@
+import 'package:app_gastos/screens/menu.dart';
 import 'package:flutter/material.dart';
+import 'package:app_gastos/screens/registro.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final Color primaryColor = Color.fromARGB(255, 76, 110, 244);
-    final Color mainBackgroundColor = Color.fromARGB(255, 245, 245, 245);
-    final Color cardColor = Color.fromARGB(255, 255, 255, 255);
-    final Color secondaryTextColor = Color.fromARGB(255, 160, 160, 160);
+    final Color primaryColor = Colors.blue;
+    final Color backgroundColor = Color(0xFFF5F5F5);
+    final Color cardColor = Colors.white;
+    final Color secondaryTextColor = Color(0xFFA0A0A0);
 
     return Scaffold(
-      backgroundColor: mainBackgroundColor,
+      backgroundColor: backgroundColor,
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -22,47 +24,87 @@ class LoginScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(24),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // Título
                   Text(
                     'Iniciar Sesión',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 20,
+                      fontSize: 22,
                       color: primaryColor,
                     ),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
+
+                  // Campo Correo
                   TextField(
                     decoration: InputDecoration(
                       labelText: 'Correo Electrónico',
-                      border: OutlineInputBorder(),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                       labelStyle: TextStyle(color: secondaryTextColor),
                     ),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 16),
+
+                  // Campo Contraseña
                   TextField(
                     obscureText: true,
                     decoration: InputDecoration(
                       labelText: 'Contraseña',
-                      border: OutlineInputBorder(),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                       labelStyle: TextStyle(color: secondaryTextColor),
                     ),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 24),
+
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryColor,
                       foregroundColor: Colors.white,
-                      minimumSize: Size(double.infinity, 50),
+                      minimumSize: const Size(double.infinity, 50),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    onPressed: () {},
-                    child: Text('Ingresar'),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => menu()),
+                      );
+                    },
+                    child: const Text(
+                      'Ingresar',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Texto de registro
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const RegistroScreen(),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      'No tienes cuenta? Dale click aquí para Registrarte!',
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ],
               ),

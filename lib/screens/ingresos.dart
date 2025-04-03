@@ -7,7 +7,11 @@ class IngresosScreen extends StatefulWidget {
 }
 
 class _IngresosScreenState extends State<IngresosScreen> {
-  final Color primaryColor = Color(0xFF2A5EE8);
+  final Color colorPrimario = Colors.blue;
+  final Color colorFondo = Color(0xFFF5F5F5);
+  final Color colorTarjeta = Colors.white;
+  final Color colorTextoSecundario = Color(0xFFA0A0A0);
+
   final TextEditingController montoController = TextEditingController();
   final TextEditingController fechaController = TextEditingController();
   final TextEditingController notaController = TextEditingController();
@@ -23,181 +27,176 @@ class _IngresosScreenState extends State<IngresosScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF5F5F5),
+      backgroundColor: colorFondo,
+      appBar: AppBar(
+        backgroundColor: colorPrimario,
+        foregroundColor: Colors.white,
+        title: const Text('Ingresos'),
+        centerTitle: true,
+      ),
       body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.symmetric(vertical: 30),
-              color: primaryColor,
-              child: Center(
-                child: Text(
-                  'Ingresos',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 20),
-            _buildIngresoForm(),
-            SizedBox(height: 20),
-            _buildIngresosRecientes(),
+            _tarjetaFormulario(),
+            const SizedBox(height: 20),
+            _tarjetaIngresosRecientes(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildIngresoForm() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Agregar Ingreso',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: montoController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: 'Monto',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: TextField(
-                      controller: fechaController,
-                      readOnly: true,
-                      decoration: InputDecoration(
-                        labelText: 'Fecha',
-                        border: OutlineInputBorder(),
-                        suffixIcon: Icon(Icons.calendar_today),
-                      ),
-                      onTap: () async {
-                        DateTime? pickedDate = await showDatePicker(
-                          context: context,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime(2100),
-                        );
-                        if (pickedDate != null) {
-                          setState(() {
-                            fechaSeleccionada = pickedDate;
-                            fechaController.text = DateFormat(
-                              'yyyy-MM-dd',
-                            ).format(pickedDate);
-                          });
-                        }
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 10),
-              DropdownButtonFormField<String>(
-                value: categoriaSeleccionada,
-                items:
-                    categorias.map((categoria) {
-                      return DropdownMenuItem(
-                        value: categoria,
-                        child: Text(categoria),
-                      );
-                    }).toList(),
-                decoration: InputDecoration(
-                  labelText: 'Seleccionar Categoría',
-                  border: OutlineInputBorder(),
-                ),
-                onChanged:
-                    (value) => setState(() => categoriaSeleccionada = value),
-              ),
-              SizedBox(height: 10),
-              TextField(
-                controller: notaController,
-                decoration: InputDecoration(
-                  labelText: 'Nota (Opcional)',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              SizedBox(height: 10),
-              ElevatedButton.icon(
-                icon: Icon(Icons.add, color: Colors.white),
-                label: Text('Agregar Ingreso'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
-                  minimumSize: Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
-                onPressed: () {},
-              ),
-            ],
-          ),
+  Widget _tarjetaFormulario() {
+    return Card(
+      color: colorTarjeta,
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _tituloSeccion(Icons.add, 'Agregar Ingreso'),
+            const SizedBox(height: 16),
+            _campoTexto('Monto', montoController, TextInputType.number),
+            const SizedBox(height: 16),
+            _campoFecha(),
+            const SizedBox(height: 16),
+            _campoDropdown(),
+            const SizedBox(height: 16),
+            _campoTexto('Nota (Opcional)', notaController),
+            const SizedBox(height: 16),
+            _botonAgregarIngreso(),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildIngresosRecientes() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Ingresos Recientes',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              SizedBox(height: 10),
-              Column(
-                children:
-                    ingresos.map((ingreso) {
-                      return ListTile(
-                        title: Text(
-                          '\$${ingreso['monto']} - ${ingreso['categoria']}',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text(ingreso['fecha']),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: Icon(Icons.edit, color: Colors.blue),
-                              onPressed: () {},
-                            ),
-                            IconButton(
-                              icon: Icon(Icons.delete, color: Colors.red),
-                              onPressed: () {},
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-              ),
-            ],
-          ),
+  Widget _tituloSeccion(IconData icon, String titulo) {
+    return Row(
+      children: [
+        Icon(icon, color: colorPrimario),
+        const SizedBox(width: 8),
+        Text(
+          titulo,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+      ],
+    );
+  }
+
+  Widget _campoTexto(
+    String label,
+    TextEditingController controller, [
+    TextInputType keyboardType = TextInputType.text,
+  ]) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        labelStyle: TextStyle(color: colorTextoSecundario),
+      ),
+    );
+  }
+
+  Widget _campoFecha() {
+    return TextField(
+      controller: fechaController,
+      readOnly: true,
+      decoration: InputDecoration(
+        labelText: 'Fecha',
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        suffixIcon: Icon(Icons.calendar_today, color: colorPrimario),
+      ),
+      onTap: () async {
+        DateTime? pickedDate = await showDatePicker(
+          context: context,
+          initialDate: DateTime.now(),
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2100),
+        );
+        if (pickedDate != null) {
+          setState(() {
+            fechaSeleccionada = pickedDate;
+            fechaController.text = DateFormat('yyyy-MM-dd').format(pickedDate);
+          });
+        }
+      },
+    );
+  }
+
+  Widget _campoDropdown() {
+    return DropdownButtonFormField<String>(
+      value: categoriaSeleccionada,
+      items:
+          categorias.map((categoria) {
+            return DropdownMenuItem(value: categoria, child: Text(categoria));
+          }).toList(),
+      decoration: InputDecoration(
+        labelText: 'Seleccionar Categoría',
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+      onChanged: (value) => setState(() => categoriaSeleccionada = value),
+    );
+  }
+
+  Widget _botonAgregarIngreso() {
+    return ElevatedButton.icon(
+      icon: const Icon(Icons.add, color: Colors.white),
+      label: const Text('Agregar Ingreso'),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: colorPrimario,
+        foregroundColor: Colors.white,
+        minimumSize: const Size(double.infinity, 50),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+      onPressed: () {},
+    );
+  }
+
+  Widget _tarjetaIngresosRecientes() {
+    return Card(
+      color: colorTarjeta,
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _tituloSeccion(Icons.history, 'Ingresos Recientes'),
+            const SizedBox(height: 16),
+            Column(
+              children:
+                  ingresos.map((ingreso) {
+                    return ListTile(
+                      title: Text(
+                        '\$${ingreso['monto']} - ${ingreso['categoria']}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(ingreso['fecha']),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit, color: Colors.blue),
+                            onPressed: () {},
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () {},
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+            ),
+          ],
         ),
       ),
     );

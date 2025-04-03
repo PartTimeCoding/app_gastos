@@ -12,147 +12,109 @@ class menu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
-      body: Column(
-        children: [
-          // Encabezado azul con solo el título y botón de retroceso
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
-            width: double.infinity,
-            color: const Color(0xFF4C6EF5),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'OptiFinanzas',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
+      appBar: AppBar(
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+        title: const Text('OptiFinanzas'),
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _tarjetaMenu(
+              context,
+              icon: Icons.trending_up,
+              label: 'Ingresos',
+              onTap:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => IngresosScreen()),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const LoginScreen(),
-                      ),
-                    );
-                  },
-                ),
-              ],
             ),
-          ),
-          const SizedBox(height: 20),
-          GridView.count(
-            shrinkWrap: true,
-            padding: const EdgeInsets.all(20),
-            crossAxisCount: 2,
-            crossAxisSpacing: 15,
-            mainAxisSpacing: 15,
-            childAspectRatio: 2, // Ajuste para que no sean tan grandes
-            children: [
-              _menuCard(
-                context,
-                icon: Icons.trending_up,
-                label: 'Ingresos',
-                onTap:
-                    () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => IngresosScreen()),
+            const SizedBox(height: 16),
+            _tarjetaMenu(
+              context,
+              icon: Icons.attach_money,
+              label: 'Gastos',
+              onTap:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => GastosScreen()),
+                  ),
+            ),
+            const SizedBox(height: 16),
+            _tarjetaMenu(
+              context,
+              icon: Icons.bar_chart,
+              label: 'Resumen Financiero',
+              onTap:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const TusFinanzasApp(),
                     ),
-              ),
-              _menuCard(
-                context,
-                icon: Icons.attach_money,
-                label: 'Gastos',
-                onTap:
-                    () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => GastosScreen()),
+                  ),
+            ),
+            const SizedBox(height: 16),
+            _tarjetaMenu(
+              context,
+              icon: Icons.print,
+              label: 'Imprimir Reporte',
+              onTap:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CrearReporte(),
                     ),
-              ),
-              _menuCard(
-                context,
-                icon: Icons.bar_chart,
-                label: 'Resumen Financiero',
-                onTap:
-                    () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const TusFinanzasApp(),
-                      ),
+                  ),
+            ),
+            const SizedBox(height: 16),
+            _tarjetaMenu(
+              context,
+              icon: Icons.help_outline,
+              label: 'Contacto Soporte',
+              onTap:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const Contactenos(),
                     ),
-              ),
-              _menuCard(
-                context,
-                icon: Icons.print,
-                label: 'Imprimir Reporte',
-                onTap:
-                    () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const CrearReporte(),
-                      ),
-                    ),
-              ),
-              _menuCard(
-                context,
-                icon: Icons.help_outline,
-                label: 'Contacto Soporte',
-                onTap:
-                    () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const Contactenos(),
-                      ),
-                    ),
-              ),
-            ],
-          ),
-        ],
+                  ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  // Widget reutilizable para las tarjetas del menú
-  Widget _menuCard(
+  Widget _tarjetaMenu(
     BuildContext context, {
     required IconData icon,
     required String label,
     required Function() onTap,
   }) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 6,
-              offset: const Offset(2, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: const Color(0xFF4C6EF5), size: 40),
-            const SizedBox(height: 10),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.black87,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+    return Card(
+      elevation: 4,
+      color: Colors.white,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Icon(icon, color: Colors.blue, size: 40),
+              const SizedBox(width: 16),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
