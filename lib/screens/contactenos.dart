@@ -10,9 +10,9 @@ class Contactenos extends StatefulWidget {
 
 class _ContactenosState extends State<Contactenos> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _issueController = TextEditingController();
+  final TextEditingController _nombreControlador = TextEditingController();
+  final TextEditingController _correoControlador = TextEditingController();
+  final TextEditingController _comentarioControlador = TextEditingController();
 
   final Color colorPrimario = Colors.blue;
   final Color colorFondo = Color(0xFFF5F5F5);
@@ -21,9 +21,9 @@ class _ContactenosState extends State<Contactenos> {
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
-    _issueController.dispose();
+    _nombreControlador.dispose();
+    _correoControlador.dispose();
+    _comentarioControlador.dispose();
     super.dispose();
   }
 
@@ -138,20 +138,20 @@ class _ContactenosState extends State<Contactenos> {
               _campoTexto(
                 'Nombre Completo',
                 colorTextoSecundario,
-                controller: _nameController,
+                controller: _nombreControlador,
               ),
               const SizedBox(height: 20),
               _campoTexto(
                 'Correo Electrónico',
                 colorTextoSecundario,
-                controller: _emailController,
+                controller: _correoControlador,
               ),
               const SizedBox(height: 20),
               _campoTexto(
                 'Describe tu consulta o problema',
                 colorTextoSecundario,
                 maxLines: 4,
-                controller: _issueController,
+                controller: _comentarioControlador,
               ),
               const SizedBox(height: 20),
               ElevatedButton.icon(
@@ -230,13 +230,25 @@ class _ContactenosState extends State<Contactenos> {
     if (_formKey.currentState!.validate()) {
       try {
         final collection = FirebaseFirestore.instance.collection(
-          'contact_queries',
+          'ContactoSoporte',
         );
 
+        if (_nombreControlador.text.isEmpty ||
+            _correoControlador.text.isEmpty ||
+            _comentarioControlador.text.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Por favor complete todos los campos'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+
         await collection.add({
-          'name': _nameController.text,
-          'email': _emailController.text,
-          'issue': _issueController.text,
+          'nombre': _nombreControlador.text,
+          'correo': _correoControlador.text,
+          'comentario': _comentarioControlador.text,
           'timestamp': FieldValue.serverTimestamp(),
         });
 
@@ -247,14 +259,25 @@ class _ContactenosState extends State<Contactenos> {
           ),
         );
 
-        _nameController.clear();
-        _emailController.clear();
-        _issueController.clear();
+        _limpiarCampos();
+      } on FirebaseException catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.message}'),
+            backgroundColor: Colors.red,
+          ),
+        );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
         );
       }
     }
+  }
+
+  void _limpiarCampos() {
+    _nombreControlador.clear();
+    _correoControlador.clear();
+    _comentarioControlador.clear();
   }
 }
