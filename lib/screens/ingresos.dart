@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class IngresosScreen extends StatefulWidget {
   @override
@@ -19,10 +21,124 @@ class _IngresosScreenState extends State<IngresosScreen> {
   final List<String> categorias = ['Salario', 'Freelance', 'Otros'];
   DateTime? fechaSeleccionada;
 
-  List<Map<String, dynamic>> ingresos = [
-    {'monto': 3000, 'categoria': 'Salario', 'fecha': '2024-03-15'},
-    {'monto': 500, 'categoria': 'Freelance', 'fecha': '2024-03-20'},
-  ];
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  // Variable para el saldo total
+  double saldoTotal = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarSaldo();
+  }
+
+  // Cargar el saldo del usuario desde Firebase
+  Future<void> _cargarSaldo() async {
+    User? user = _auth.currentUser;
+    if (user != null) {
+      DocumentSnapshot snapshot =
+          await _firestore.collection('SaldoUsuario').doc(user.uid).get();
+
+      if (snapshot.exists) {
+        setState(() {
+          saldoTotal = snapshot['saldo']?.toDouble() ?? 0.0;
+        });
+      }
+    }
+  }
+
+  // Actualizar el saldo en Firebase
+  Future<void> _actualizarSaldo(double monto, bool esIngreso) async {
+    User? user = _auth.currentUser;
+    if (user != null) {
+      double nuevoSaldo = esIngreso ? saldoTotal + monto : saldoTotal - monto;
+
+      await _firestore.collection('SaldoUsuario').doc(user.uid).set({
+        'saldo': nuevoSaldo,
+      });
+
+      setState(() {
+        saldoTotal = nuevoSaldo;
+      });
+    }
+  }
+
+  // Agregar un ingreso a Firebase
+  Future<void> _agregarIngreso() async {
+    if (montoController.text.isEmpty ||
+        fechaSeleccionada == null ||
+        categoriaSeleccionada == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Por favor complete todos los campos requeridos'),
+        ),
+      );
+      return;
+    }
+
+    User? user = _auth.currentUser;
+    if (user != null) {
+      try {
+        double monto = double.parse(montoController.text);
+
+        // Obtener el documento de SaldoUsuario
+        DocumentSnapshot snapshot =
+            await _firestore.collection('SaldoUsuario').doc(user.uid).get();
+
+        // Agregar el ingreso al arreglo de ingresos
+        if (snapshot.exists) {
+          List<Map<String, dynamic>> ingresos = List.from(
+            snapshot['ingresos'] ?? [],
+          );
+          ingresos.add({
+            'monto': monto,
+            'categoria': categoriaSeleccionada,
+            'fecha': fechaSeleccionada,
+            'nota': notaController.text,
+          });
+
+          // Actualizar el documento de SaldoUsuario
+          await _firestore.collection('SaldoUsuario').doc(user.uid).set({
+            'saldo': snapshot['saldo'] + monto,
+            'ingresos': ingresos,
+          }, SetOptions(merge: true));
+        } else {
+          // Crear un nuevo documento de SaldoUsuario
+          await _firestore.collection('SaldoUsuario').doc(user.uid).set({
+            'saldo': monto,
+            'ingresos': [
+              {
+                'monto': monto,
+                'categoria': categoriaSeleccionada,
+                'fecha': fechaSeleccionada,
+                'nota': notaController.text,
+              },
+            ],
+          });
+        }
+
+        await _cargarSaldo();
+
+        // Limpiar los campos
+        montoController.clear();
+        fechaController.clear();
+        notaController.clear();
+        setState(() {
+          categoriaSeleccionada = null;
+          fechaSeleccionada = null;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ingreso agregado correctamente')),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error al agregar ingreso: $e')));
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +155,25 @@ class _IngresosScreenState extends State<IngresosScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            Card(
+              color: colorPrimario,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Text('Saldo Actual', style: TextStyle(color: colorTarjeta)),
+                    Text(
+                      '\$${saldoTotal.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
             _tarjetaFormulario(),
             const SizedBox(height: 20),
             _tarjetaIngresosRecientes(),
@@ -155,11 +290,17 @@ class _IngresosScreenState extends State<IngresosScreen> {
         minimumSize: const Size(double.infinity, 50),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
-      onPressed: () {},
+      onPressed: _agregarIngreso,
     );
   }
 
   Widget _tarjetaIngresosRecientes() {
+    User? user = _auth.currentUser;
+
+    if (user == null) {
+      return Center(child: Text('Usuario no autenticado'));
+    }
+
     return Card(
       color: colorTarjeta,
       elevation: 4,
@@ -169,32 +310,67 @@ class _IngresosScreenState extends State<IngresosScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _tituloSeccion(Icons.history, 'Ingresos Recientes'),
+            _tituloSeccion(Icons.history, 'Transacciones Recientes'),
             const SizedBox(height: 16),
-            Column(
-              children:
-                  ingresos.map((ingreso) {
-                    return ListTile(
-                      title: Text(
-                        '\$${ingreso['monto']} - ${ingreso['categoria']}',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Text(ingreso['fecha']),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit, color: Colors.blue),
-                            onPressed: () {},
+            StreamBuilder<DocumentSnapshot>(
+              stream:
+                  _firestore
+                      .collection('SaldoUsuario')
+                      .doc(user.uid)
+                      .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                }
+
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                }
+
+                if (snapshot.data?.data() == null) {
+                  return Center(child: Text('No hay ingresos registrados'));
+                }
+
+                Map<String, dynamic> data =
+                    snapshot.data!.data() as Map<String, dynamic>;
+                List<Map<String, dynamic>> ingresos = List.from(
+                  data['ingresos'] ?? [],
+                );
+
+                if (ingresos.isEmpty) {
+                  return Center(child: Text('No hay ingresos registrados'));
+                }
+
+                return Column(
+                  children:
+                      ingresos.map((ingreso) {
+                        DateTime fecha =
+                            (ingreso['fecha'] as Timestamp).toDate();
+
+                        return ListTile(
+                          title: Text(
+                            '\$${ingreso['monto'].toStringAsFixed(2)} - ${ingreso['categoria']}',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () {},
+                          subtitle: Text(
+                            DateFormat('yyyy-MM-dd').format(fecha),
                           ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
+                                ),
+                                onPressed: () => (),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                );
+              },
             ),
           ],
         ),

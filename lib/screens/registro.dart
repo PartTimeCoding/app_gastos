@@ -1,6 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:intl/intl.dart'; // Import the intl package for date formatting
+import 'package:intl/intl.dart';
 
 class RegistroScreen extends StatefulWidget {
   const RegistroScreen({Key? key}) : super(key: key);
@@ -38,23 +39,44 @@ class _RegistroScreenState extends State<RegistroScreen> {
       final password = controladorContrasena.text.trim();
 
       // Attempt to create user with Firebase Auth
-      UserCredential userCredential =
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      print('✅ Usuario registrado: ${userCredential.user?.uid}');
+      UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
+      print('Usuario registrado: ${userCredential.user?.uid}');
 
-      // --- Pop the screen on success ---
-      // Check if the widget is still in the tree before interacting with context
+      try {
+        await FirebaseFirestore.instance
+            .collection('Registro')
+            .doc(userCredential.user?.uid)
+            .set({
+              'nombre': controladorNombre.text,
+              'apellido': controladorApellido.text,
+              'fechaNacimiento': controladorFechaNacimiento.text,
+              'correo': controladorCorreo.text,
+              'usuario': controladorUsuario.text,
+            });
+      } catch (e) {
+        print('Error al crear el documento de registro: $e');
+      }
+
+      try {
+        await FirebaseFirestore.instance
+            .collection('SaldoUsuario')
+            .doc(userCredential.user?.uid)
+            .set({'saldo': 0.0, 'ingresos': []});
+        print('Documento creado en SaldoUsuario');
+      } on FirebaseException catch (e) {
+        print('Error de Firebase: ${e.code} - ${e.message}');
+      } catch (e) {
+        print('Error desconocido: $e');
+      }
+
       if (mounted) {
         // Remove the RegistroScreen from the navigation stack.
         // This reveals the underlying screen managed by AuthWrapper (which should now be MenuScreen).
         Navigator.of(context).pop();
-
       }
     } on FirebaseAuthException catch (e) {
-      print('🔥 Error de registro: ${e.code} - ${e.message}');
+      print('Error de registro: ${e.code} - ${e.message}');
       String message;
       // Provide user-friendly error messages
       if (e.code == 'weak-password') {
@@ -78,20 +100,20 @@ class _RegistroScreenState extends State<RegistroScreen> {
       }
     } catch (e) {
       // Catch any other unexpected errors
-      print('🔥 Error inesperado: $e');
+      print('Error inesperado: $e');
       // Show a generic error message and hide loading indicator
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-              content: Text('Ocurrió un error inesperado.'),
-              backgroundColor: Colors.red),
+            content: Text('Ocurrió un error inesperado.'),
+            backgroundColor: Colors.red,
+          ),
         );
         setState(() {
           _isLoading = false; // Hide loading indicator on error
         });
       }
     }
-
   }
   // --- End Firebase Registration Logic ---
 
@@ -128,7 +150,9 @@ class _RegistroScreenState extends State<RegistroScreen> {
     if (picked != null) {
       setState(() {
         // Format the date using intl package for better control (e.g., dd/MM/yyyy)
-        controladorFechaNacimiento.text = DateFormat('dd/MM/yyyy').format(picked);
+        controladorFechaNacimiento.text = DateFormat(
+          'dd/MM/yyyy',
+        ).format(picked);
       });
     }
   }
@@ -137,10 +161,7 @@ class _RegistroScreenState extends State<RegistroScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Registro'),
-
-      ),
+      appBar: AppBar(title: const Text('Registro')),
       backgroundColor: Colors.white, // Consider using Theme background color
       body: Center(
         // Use Center and SingleChildScrollView for responsiveness
@@ -198,7 +219,11 @@ class _RegistroScreenState extends State<RegistroScreen> {
                     ),
                     const SizedBox(height: 16),
                     // Username field (optional, depends if you save it)
-                    _campoTexto(controladorUsuario, 'Usuario (Opcional)', esOpcional: true), // Mark as optional
+                    _campoTexto(
+                      controladorUsuario,
+                      'Usuario (Opcional)',
+                      esOpcional: true,
+                    ), // Mark as optional
                     const SizedBox(height: 16),
                     // Password field with specific validation
                     TextFormField(
@@ -225,17 +250,23 @@ class _RegistroScreenState extends State<RegistroScreen> {
                     _isLoading
                         ? const Center(child: CircularProgressIndicator())
                         : ElevatedButton(
-                            onPressed: _registrarUsuarioFirebase, // Call registration function
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue, // Theme primary color
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8), // Consistent border radius
-                              ),
-                              minimumSize: const Size(double.infinity, 50), // Full width button
+                          onPressed:
+                              _registrarUsuarioFirebase, // Call registration function
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue, // Theme primary color
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                8,
+                              ), // Consistent border radius
                             ),
-                            child: const Text('Registrar'),
+                            minimumSize: const Size(
+                              double.infinity,
+                              50,
+                            ), // Full width button
                           ),
+                          child: const Text('Registrar'),
+                        ),
                   ],
                 ),
               ),
