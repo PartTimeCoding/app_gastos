@@ -95,10 +95,8 @@ class _GastosScreenState extends State<GastosScreen> {
 
         // Agregar el gasto al arreglo de gastos
         if (snapshot.exists) {
-          List<Map<String, dynamic>> gastos = List.from(
-            snapshot['gastos'] ?? [],
-          );
-          gastos.add({
+          List<Map<String, dynamic>> gasto = List.from(snapshot['gasto'] ?? []);
+          gasto.add({
             'monto': monto,
             'categoria': categoriaSeleccionada,
             'fecha': fechaSeleccionada,
@@ -109,13 +107,13 @@ class _GastosScreenState extends State<GastosScreen> {
           // Actualizar el documento de SaldoUsuario
           await _firestore.collection('SaldoUsuario').doc(user.uid).set({
             'saldo': snapshot['saldo'] - monto,
-            'gastos': gastos,
+            'gasto': gasto,
           }, SetOptions(merge: true));
         } else {
           // Crear un nuevo documento de SaldoUsuario
           await _firestore.collection('SaldoUsuario').doc(user.uid).set({
             'saldo': -monto,
-            'gastos': [
+            'gasto': [
               {
                 'monto': monto,
                 'categoria': categoriaSeleccionada,
@@ -378,17 +376,17 @@ class _GastosScreenState extends State<GastosScreen> {
 
                   Map<String, dynamic> data =
                       snapshot.data!.data() as Map<String, dynamic>;
-                  List<Map<String, dynamic>> gastos = List.from(
-                    data['gastos'] ?? [],
+                  List<Map<String, dynamic>> gasto = List.from(
+                    data['gasto'] ?? [],
                   );
 
-                  if (gastos.isEmpty) {
+                  if (gasto.isEmpty) {
                     return Center(child: Text('No hay gastos registrados'));
                   }
 
                   return Column(
                     children:
-                        gastos.map((gasto) {
+                        gasto.map((gasto) {
                           DateTime fecha =
                               (gasto['fecha'] as Timestamp).toDate();
 
