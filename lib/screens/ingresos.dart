@@ -355,18 +355,6 @@ class _IngresosScreenState extends State<IngresosScreen> {
                           subtitle: Text(
                             DateFormat('yyyy-MM-dd').format(fecha),
                           ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.delete,
-                                  color: Colors.red,
-                                ),
-                                onPressed: () => (),
-                              ),
-                            ],
-                          ),
                         );
                       }).toList(),
                 );

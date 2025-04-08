@@ -1,42 +1,202 @@
-import 'package:flutter/material.dart';
 import 'dart:math';
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fl_chart/fl_chart.dart';
 
-class TusFinanzasApp extends StatelessWidget {
-  const TusFinanzasApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Tus Finanzas',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        fontFamily: 'Roboto',
-        cardTheme: CardTheme(
-          elevation: 2,
-          margin: const EdgeInsets.symmetric(vertical: 8),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      ),
-      home: const TusFinanzasScreen(),
-    );
-  }
-}
-
-class TusFinanzasScreen extends StatelessWidget {
+class TusFinanzasScreen extends StatefulWidget {
   const TusFinanzasScreen({super.key});
 
   @override
+  State<TusFinanzasScreen> createState() => _TusFinanzasScreenState();
+}
+
+class _TusFinanzasScreenState extends State<TusFinanzasScreen> {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final String _userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+
+  double _totalIngresos = 0;
+  double _totalGastos = 0;
+  Map<String, double> _gastosPorCategoria = {};
+  Map<String, double> _ingresosPorCategoria = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarDatos();
+  }
+
+  Future<void> _cargarDatos() async {
+    try {
+      final snapshot =
+          await _firestore.collection('SaldoUsuario').doc(_userId).get();
+
+      if (snapshot.exists) {
+        var ingresosData = snapshot['ingresos'] ?? [];
+        var gastosData = snapshot['gastos'] ?? [];
+
+        double ingresos = ingresosData.fold(0, (sum, ingreso) {
+          return sum + (ingreso['monto'] ?? 0);
+        });
+
+        double gastos = gastosData.fold(0, (sum, gasto) {
+          return sum + (gasto['monto'] ?? 0);
+        });
+
+        setState(() {
+          _totalIngresos = ingresos;
+          _totalGastos = gastos;
+          _gastosPorCategoria = _agruparPorCategoria(gastosData);
+          _ingresosPorCategoria = _agruparPorCategoria(ingresosData);
+        });
+      } else {
+        print("El documento no existe.");
+      }
+    } catch (e) {
+      print('Error al cargar datos: $e');
+    }
+  }
+
+  Map<String, double> _agruparPorCategoria(List<dynamic> data) {
+    Map<String, double> resultado = {};
+    for (var item in data) {
+      String categoria = item['categoria'] ?? 'Sin categoría';
+      double monto = item['monto'] ?? 0;
+
+      if (resultado.containsKey(categoria)) {
+        resultado[categoria] = resultado[categoria]! + monto;
+      } else {
+        resultado[categoria] = monto;
+      }
+    }
+    return resultado;
+  }
+
+  Widget _buildGraficoGastosPorCategoria() {
+    if (_gastosPorCategoria.isEmpty) {
+      return const Text('No hay datos para mostrar.');
+    }
+
+    final List<PieChartSectionData> sections = [];
+    final total = _gastosPorCategoria.values.fold(0.0, (a, b) => a + b);
+    final random = Random();
+
+    _gastosPorCategoria.forEach((categoria, monto) {
+      final porcentaje = monto / total * 100;
+      final color = _generarColorAleatorio();
+      sections.add(
+        PieChartSectionData(
+          value: monto,
+          title: '${porcentaje.toStringAsFixed(1)}%',
+          color: color,
+          radius: 80,
+          titleStyle: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+      );
+    });
+
+    return Column(
+      children: [
+        SizedBox(
+          height: 250,
+          child: PieChart(
+            PieChartData(
+              sections: sections,
+              centerSpaceRadius: 40,
+              sectionsSpace: 2,
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+        ..._gastosPorCategoria.entries.map(
+          (e) => Row(
+            children: [
+              Container(
+                width: 16,
+                height: 16,
+                color:
+                    sections[_gastosPorCategoria.keys.toList().indexOf(e.key)]
+                        .color,
+              ),
+              const SizedBox(width: 8),
+              Text('${e.key}: \$${e.value.toStringAsFixed(2)}'),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGraficoIngresosPorCategoria() {
+    if (_ingresosPorCategoria.isEmpty) {
+      return const Text('No hay datos para mostrar.');
+    }
+
+    final List<PieChartSectionData> sections = [];
+    final total = _ingresosPorCategoria.values.fold(0.0, (a, b) => a + b);
+    final random = Random();
+
+    _ingresosPorCategoria.forEach((categoria, monto) {
+      final porcentaje = monto / total * 100;
+      final color = _generarColorAleatorio();
+      sections.add(
+        PieChartSectionData(
+          value: monto,
+          title: '${porcentaje.toStringAsFixed(1)}%',
+          color: color,
+          radius: 80,
+          titleStyle: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+      );
+    });
+
+    return Column(
+      children: [
+        SizedBox(
+          height: 250,
+          child: PieChart(
+            PieChartData(
+              sections: sections,
+              centerSpaceRadius: 40,
+              sectionsSpace: 2,
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+        ..._ingresosPorCategoria.entries.map(
+          (e) => Row(
+            children: [
+              Container(
+                width: 16,
+                height: 16,
+                color:
+                    sections[_ingresosPorCategoria.keys.toList().indexOf(e.key)]
+                        .color,
+              ),
+              const SizedBox(width: 8),
+              Text('${e.key}: \$${e.value.toStringAsFixed(2)}'),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    double saldoDisponible = _totalIngresos - _totalGastos;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue,
-        titleTextStyle: const TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
         title: const Text('Resumen Financiero'),
         centerTitle: true,
       ),
@@ -50,41 +210,33 @@ class TusFinanzasScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Resumen Mensual',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         _buildSummaryItem(
                           'Total Ingresos',
-                          '\$16,500',
+                          '\$${_totalIngresos.toStringAsFixed(2)}',
                           Colors.green,
                         ),
                         _buildSummaryItem(
                           'Total Gastos',
-                          '\$12,700',
+                          '\$${_totalGastos.toStringAsFixed(2)}',
                           Colors.red,
                         ),
                       ],
                     ),
                     const SizedBox(height: 24),
-                    const Center(
+                    Center(
                       child: Column(
                         children: [
-                          Text(
+                          const Text(
                             'Saldo Disponible',
                             style: TextStyle(fontSize: 16, color: Colors.grey),
                           ),
-                          SizedBox(height: 8),
+                          const SizedBox(height: 8),
                           Text(
-                            '\$3,800',
-                            style: TextStyle(
+                            '\$${saldoDisponible.toStringAsFixed(2)}',
+                            style: const TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.bold,
                               color: Colors.blue,
@@ -97,85 +249,20 @@ class TusFinanzasScreen extends StatelessWidget {
                 ),
               ),
             ),
-
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Comparación Ingresos vs Gastos',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      height: 200,
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          final maxBarHeight = constraints.maxHeight * 0.5;
-                          final maxDataValue = 7000.0;
-
-                          return Row(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              Expanded(
-                                child: _buildBarChartColumn(
-                                  'Feb',
-                                  6000,
-                                  3000,
-                                  maxBarHeight,
-                                  maxDataValue,
-                                ),
-                              ),
-                              Expanded(
-                                child: _buildBarChartColumn(
-                                  'Mar',
-                                  5000,
-                                  4500,
-                                  maxBarHeight,
-                                  maxDataValue,
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            const SizedBox(height: 24),
+            const Text(
+              'Distribución de Gastos por Categoría',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Recomendaciones',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildRecommendationItem(
-                      'Reducir gastos en categoría de entretenimiento',
-                    ),
-                    _buildRecommendationItem(
-                      'Considerar aumentar ahorros en inversiones',
-                    ),
-                    _buildRecommendationItem('Optimizar gastos de transporte'),
-                  ],
-                ),
-              ),
+            const SizedBox(height: 12),
+            _buildGraficoGastosPorCategoria(),
+            const SizedBox(height: 24),
+            const Text(
+              'Distribución de Ingresos por Categoría',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
+            const SizedBox(height: 12),
+            _buildGraficoIngresosPorCategoria(),
           ],
         ),
       ),
@@ -200,80 +287,13 @@ class TusFinanzasScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBarChartColumn(
-    String month,
-    double income,
-    double expenses,
-    double maxBarHeight,
-    double maxDataValue,
-  ) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        Container(
-          width: 40,
-          height: (income / maxDataValue) * maxBarHeight,
-          decoration: BoxDecoration(
-            color: Colors.green[400],
-            borderRadius: BorderRadius.circular(4),
-          ),
-          margin: const EdgeInsets.only(bottom: 4),
-          child: Align(
-            alignment: Alignment.topCenter,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 4.0),
-              child: Text(
-                '\$${income.toInt()}',
-                style: const TextStyle(
-                  fontSize: 10,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-        ),
-        Container(
-          width: 40,
-          height: (expenses / maxDataValue) * maxBarHeight,
-          decoration: BoxDecoration(
-            color: Colors.red[400],
-            borderRadius: BorderRadius.circular(4),
-          ),
-          margin: const EdgeInsets.only(bottom: 8),
-          child: Align(
-            alignment: Alignment.topCenter,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 4.0),
-              child: Text(
-                '\$${expenses.toInt()}',
-                style: const TextStyle(
-                  fontSize: 10,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-        ),
-        Text(month, style: const TextStyle(fontWeight: FontWeight.bold)),
-      ],
-    );
-  }
-
-  Widget _buildRecommendationItem(String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.only(top: 4.0, right: 8.0),
-            child: Icon(Icons.circle, size: 8, color: Colors.blue),
-          ),
-          Expanded(child: Text(text, style: const TextStyle(fontSize: 16))),
-        ],
-      ),
+  Color _generarColorAleatorio() {
+    final random = Random();
+    return Color.fromARGB(
+      255,
+      random.nextInt(200) + 55,
+      random.nextInt(200) + 55,
+      random.nextInt(200) + 55,
     );
   }
 }

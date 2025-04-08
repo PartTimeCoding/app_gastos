@@ -95,10 +95,10 @@ class _GastosScreenState extends State<GastosScreen> {
 
         // Agregar el gasto al arreglo de gastos
         if (snapshot.exists) {
-          List<Map<String, dynamic>> ingresos = List.from(
-            snapshot['ingresos'] ?? [],
+          List<Map<String, dynamic>> gastos = List.from(
+            snapshot['gastos'] ?? [],
           );
-          ingresos.add({
+          gastos.add({
             'monto': monto,
             'categoria': categoriaSeleccionada,
             'fecha': fechaSeleccionada,
@@ -109,13 +109,13 @@ class _GastosScreenState extends State<GastosScreen> {
           // Actualizar el documento de SaldoUsuario
           await _firestore.collection('SaldoUsuario').doc(user.uid).set({
             'saldo': snapshot['saldo'] - monto,
-            'ingresos': ingresos,
+            'gastos': gastos,
           }, SetOptions(merge: true));
         } else {
           // Crear un nuevo documento de SaldoUsuario
           await _firestore.collection('SaldoUsuario').doc(user.uid).set({
             'saldo': -monto,
-            'ingresos': [
+            'gastos': [
               {
                 'monto': monto,
                 'categoria': categoriaSeleccionada,
@@ -173,10 +173,7 @@ class _GastosScreenState extends State<GastosScreen> {
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
-                    Text(
-                      'Saldo Actual',
-                      style: TextStyle(color: colorTextoSecundario),
-                    ),
+                    Text('Saldo Actual', style: TextStyle(color: colorTarjeta)),
                     Text(
                       '\$${saldoTotal.toStringAsFixed(2)}',
                       style: TextStyle(
@@ -382,7 +379,7 @@ class _GastosScreenState extends State<GastosScreen> {
                   Map<String, dynamic> data =
                       snapshot.data!.data() as Map<String, dynamic>;
                   List<Map<String, dynamic>> gastos = List.from(
-                    data['ingresos'] ?? [],
+                    data['gastos'] ?? [],
                   );
 
                   if (gastos.isEmpty) {
@@ -404,18 +401,6 @@ class _GastosScreenState extends State<GastosScreen> {
                             ),
                             subtitle: Text(
                               '${DateFormat('yyyy-MM-dd').format(fecha)} - ${gasto['metodoPago']}',
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.delete,
-                                    color: Colors.red,
-                                  ),
-                                  onPressed: () => (),
-                                ),
-                              ],
                             ),
                           );
                         }).toList(),

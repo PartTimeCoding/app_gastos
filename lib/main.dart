@@ -4,7 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
 import 'package:app_gastos/screens/login.dart';
-import 'package:app_gastos/screens/menu.dart'; 
+import 'package:app_gastos/screens/menu.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,7 +14,6 @@ void main() async {
     );
     print('✅ Firebase initialized successfully');
     runApp(const MyApp());
-
   } catch (e) {
     print('🔥 Fatal Firebase error: $e');
     runApp(ErrorApp(errorMessage: e.toString())); // Pass error message
@@ -42,7 +41,9 @@ class AuthWrapper extends StatelessWidget {
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
-        print("AuthWrapper rebuild: ConnectionState=${snapshot.connectionState}, HasData=${snapshot.hasData}, HasError=${snapshot.hasError}"); // <-- ADD THIS
+        print(
+          "AuthWrapper rebuild: ConnectionState=${snapshot.connectionState}, HasData=${snapshot.hasData}, HasError=${snapshot.hasError}",
+        ); // <-- ADD THIS
 
         if (snapshot.connectionState == ConnectionState.waiting) {
           print("AuthWrapper: Waiting for auth state...");
@@ -51,14 +52,17 @@ class AuthWrapper extends StatelessWidget {
           );
         }
 
-        if (snapshot.hasError) { // <-- ADD ERROR HANDLING
-           print("AuthWrapper: Error in auth stream: ${snapshot.error}");
-           return const Scaffold(body: Center(child: Text('Error en la autenticación')));
+        if (snapshot.hasError) {
+          print("AuthWrapper: Error in auth stream: ${snapshot.error}");
+          return const Scaffold(
+            body: Center(child: Text('Error en la autenticación')),
+          );
         }
 
-
         if (snapshot.hasData) {
-          print('AuthWrapper: User is logged in: ${snapshot.data?.uid}. Showing menu.'); 
+          print(
+            'AuthWrapper: User is logged in: ${snapshot.data?.uid}. Showing menu.',
+          );
           return const menu();
         }
 
@@ -68,7 +72,6 @@ class AuthWrapper extends StatelessWidget {
     );
   }
 }
-
 
 class ErrorApp extends StatelessWidget {
   final String errorMessage;
@@ -86,12 +89,15 @@ class ErrorApp extends StatelessWidget {
               children: [
                 const Icon(Icons.error_outline, color: Colors.red, size: 50),
                 const SizedBox(height: 20),
-                const Text('Firebase Initialization Error', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                const Text(
+                  'Firebase Initialization Error',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 10),
-                Text(errorMessage, textAlign: TextAlign.center), 
+                Text(errorMessage, textAlign: TextAlign.center),
                 const SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: () => main(), 
+                  onPressed: () => main(),
                   child: const Text('Retry'),
                 ),
               ],
