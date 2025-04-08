@@ -1,16 +1,18 @@
 # app_gastos
 
-A new Flutter project.
+Proyecto OptiFinanzas
 
-## Getting Started
+Williams Marin Castellanos Castellanos 0201200100669
+Manuel José Barahona Rosales 0101200302248
+Diego Ismael Molina Flores 1201199800386
+Kevin Daniel Escoto Midence 0801200403603
+Erick Abraham Zavala Guillen 0801200407857
+Victor Josue Torres Roque 0805200500029
+Dany María posadas canales 1709200001230
+Jared André Ferrera 0703201601542
+Anthony Jafeth Alcerro Aguilar 0318200501510
+Lizardo Jose Aguilar Valle 1416200200087
 
-This project is a starting point for a Flutter application.
+## Notas Importantes
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Usar el comando flutter pub get para descargar las dependencias antes de correr la aplicacion.
