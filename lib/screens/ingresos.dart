@@ -24,7 +24,6 @@ class _IngresosScreenState extends State<IngresosScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Variable para el saldo total
   double saldoTotal = 0.0;
 
   @override
@@ -33,7 +32,6 @@ class _IngresosScreenState extends State<IngresosScreen> {
     _cargarSaldo();
   }
 
-  // Cargar el saldo del usuario desde Firebase
   Future<void> _cargarSaldo() async {
     User? user = _auth.currentUser;
     if (user != null) {
@@ -48,7 +46,6 @@ class _IngresosScreenState extends State<IngresosScreen> {
     }
   }
 
-  // Actualizar el saldo en Firebase
   Future<void> _actualizarSaldo(double monto, bool esIngreso) async {
     User? user = _auth.currentUser;
     if (user != null) {
@@ -64,7 +61,6 @@ class _IngresosScreenState extends State<IngresosScreen> {
     }
   }
 
-  // Agregar un ingreso a Firebase
   Future<void> _agregarIngreso() async {
     if (montoController.text.isEmpty ||
         fechaSeleccionada == null ||
@@ -82,11 +78,9 @@ class _IngresosScreenState extends State<IngresosScreen> {
       try {
         double monto = double.parse(montoController.text);
 
-        // Obtener el documento de SaldoUsuario
         DocumentSnapshot snapshot =
             await _firestore.collection('SaldoUsuario').doc(user.uid).get();
 
-        // Agregar el ingreso al arreglo de ingresos
         if (snapshot.exists) {
           List<Map<String, dynamic>> ingresos = List.from(
             snapshot['ingresos'] ?? [],
@@ -98,13 +92,11 @@ class _IngresosScreenState extends State<IngresosScreen> {
             'nota': notaController.text,
           });
 
-          // Actualizar el documento de SaldoUsuario
           await _firestore.collection('SaldoUsuario').doc(user.uid).set({
             'saldo': snapshot['saldo'] + monto,
             'ingresos': ingresos,
           }, SetOptions(merge: true));
         } else {
-          // Crear un nuevo documento de SaldoUsuario
           await _firestore.collection('SaldoUsuario').doc(user.uid).set({
             'saldo': monto,
             'ingresos': [
@@ -120,7 +112,6 @@ class _IngresosScreenState extends State<IngresosScreen> {
 
         await _cargarSaldo();
 
-        // Limpiar los campos
         montoController.clear();
         fechaController.clear();
         notaController.clear();

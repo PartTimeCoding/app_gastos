@@ -30,7 +30,6 @@ class _GastosScreenState extends State<GastosScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Variable para el saldo total
   double saldoTotal = 0.0;
 
   @override
@@ -39,7 +38,6 @@ class _GastosScreenState extends State<GastosScreen> {
     _cargarSaldo();
   }
 
-  // Cargar el saldo del usuario desde Firebase
   Future<void> _cargarSaldo() async {
     User? user = _auth.currentUser;
     if (user != null) {
@@ -54,7 +52,6 @@ class _GastosScreenState extends State<GastosScreen> {
     }
   }
 
-  // Actualizar el saldo en Firebase
   Future<void> _actualizarSaldo(double monto, bool esGasto) async {
     User? user = _auth.currentUser;
     if (user != null) {
@@ -70,7 +67,6 @@ class _GastosScreenState extends State<GastosScreen> {
     }
   }
 
-  // Agregar un gasto a Firebase
   Future<void> _agregarGasto() async {
     if (montoController.text.isEmpty ||
         fechaSeleccionada == null ||
@@ -89,11 +85,9 @@ class _GastosScreenState extends State<GastosScreen> {
       try {
         double monto = double.parse(montoController.text);
 
-        // Obtener el documento de SaldoUsuario
         DocumentSnapshot snapshot =
             await _firestore.collection('SaldoUsuario').doc(user.uid).get();
 
-        // Agregar el gasto al arreglo de gastos
         if (snapshot.exists) {
           List<Map<String, dynamic>> gasto = List.from(snapshot['gasto'] ?? []);
           gasto.add({
@@ -104,13 +98,11 @@ class _GastosScreenState extends State<GastosScreen> {
             'nota': notaController.text,
           });
 
-          // Actualizar el documento de SaldoUsuario
           await _firestore.collection('SaldoUsuario').doc(user.uid).set({
             'saldo': snapshot['saldo'] - monto,
             'gasto': gasto,
           }, SetOptions(merge: true));
         } else {
-          // Crear un nuevo documento de SaldoUsuario
           await _firestore.collection('SaldoUsuario').doc(user.uid).set({
             'saldo': -monto,
             'gasto': [
@@ -127,7 +119,6 @@ class _GastosScreenState extends State<GastosScreen> {
 
         await _cargarSaldo();
 
-        // Limpiar los campos
         montoController.clear();
         fechaController.clear();
         notaController.clear();

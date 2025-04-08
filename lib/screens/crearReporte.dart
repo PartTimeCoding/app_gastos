@@ -128,9 +128,7 @@ class _CrearReporteState extends State<CrearReporte> {
   }
 
   void _agregarReporteAlHistorial(String tipoReporte) {
-    final String fecha = DateFormat(
-      'dd/MM/yyyy',
-    ).format(DateTime.now()); // Fecha actual
+    final String fecha = DateFormat('dd/MM/yyyy').format(DateTime.now());
     setState(() {
       _historialReportes.add({'fecha': fecha, 'tipo': tipoReporte});
     });
